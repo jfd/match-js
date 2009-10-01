@@ -5,9 +5,6 @@ A simple yet powerful pattern matching library for Javascript.
 
 Let you do stuff like this (a WebWorker example):
 
-	importScripts('../../match.js');
-	importScripts('../shared/utils.js');
-
 	// Hook the incoming message event with a Match statement.
 	onmessage = Match (
     
