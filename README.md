@@ -32,4 +32,4 @@ Let you do stuff like this (a WebWorker example):
 	);
 
 
-More more examples, please navigate to /examples
+For more examples, please navigate to /examples
