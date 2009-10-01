@@ -3,7 +3,7 @@ match-js
 A simple yet powerful pattern matching library for Javascript. 
 
 
-Let you do stuff like this:
+Let you do stuff like this (a WebWorker example):
 
 	importScripts('../../match.js');
 	importScripts('../shared/utils.js');
@@ -19,16 +19,16 @@ Let you do stuff like this:
 	        post('ping');
 	    },
     
-	    // Tell main thread that we are ready to work
+	    // Tell main thread that this service is ready for work
 	    'pong', function() {
 	        post('ready-to-work');
 	    },
     
-	    // To a calculation against the specified value. Simulate a heavy 
+	    // Do a calculation against the specified value. Simulate a heavy 
 	    // calculation by sending a delayed answer. 
-	    ['multiple-value', Number, Number], function(n, no1, no2) {
+	    ['calc', Number, Number], function(n, no1, no2) {
 	        setTimeout(function() {
-	            postMessage(['multiple-done', no1 * no2]);
+	            post(['calc-done', no1 * no2]);
 	        }, 800);
 	    }
     
