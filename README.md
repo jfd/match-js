@@ -5,6 +5,16 @@ A simple yet powerful pattern matching library for Javascript.
 
 Let you do stuff like this (a WebWorker example):
 
+	// Create a filter that jsonify incomming data
+	var json_filter = Match ( 
+        
+	    // Match if incomming object has a property called data (of type String)
+	    { data: String }, function(data) {
+	        return JSON.parse(data);
+	    }
+    
+	);
+
 	// Hook the incoming message event with a Match statement.
 	onmessage = Match (
     
