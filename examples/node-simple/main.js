@@ -1,7 +1,7 @@
 
 // Import dependencies
-node.mixin(require('/utils.js'));
-node.mixin(require('../../match.js'));
+process.mixin(require('utils'));
+process.mixin(require('../../match'));
 
 function main() {
 	
