@@ -26,14 +26,14 @@ Let you do stuff like this (a WebWorker example):
 	        post('ping');
 	    },
     
-	    // Tell main thread that this service is ready for work
+	    // Tell main thread that this service is ready for some work
 	    'pong', function() {
-	        post('ready-to-work');
+	        post('ready');
 	    },
     
 	    // Do a calculation against the specified value. Simulate a heavy 
 	    // calculation by sending a delayed answer. 
-	    ['calc', Number, Number], function(n, no1, no2) {
+	    ['calc', Number, Number], function(no1, no2) {
 	        setTimeout(function() {
 	            post(['calc-done', no1 * no2]);
 	        }, 800);
