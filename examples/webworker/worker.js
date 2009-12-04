@@ -19,7 +19,7 @@ onmessage = Match (
     
     // To a calculation against the specified value. Simulate a heavy 
     // calculation by sending a delayed answer. 
-    ['calc', Number, Number], function(n, no1, no2) {
+    ['calc', Number, Number], function(no1, no2) {
         setTimeout(function() {
             post(['calc-done', no1 * no2]);
         }, 800);

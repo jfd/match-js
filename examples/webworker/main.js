@@ -26,7 +26,7 @@ function main() {
 		},
 		
 		// Worker is done with the calculation. 
-        ['calc-done', Number], function(id, answer) {
+        ['calc-done', Number], function(answer) {
 			println('The answer of 12 * 24 is: ' + answer);
 		}
 	)
