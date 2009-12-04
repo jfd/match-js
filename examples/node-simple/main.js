@@ -5,10 +5,6 @@ process.mixin(require('../../match'));
 
 function main() {
 	
-	function IS_MY_OBJ(value) {
-		if(!value || !value._myobj) throw "no match!";
-	}
-
 	var resolver = Match (
 		14, function() {
 			puts(' - Matched against strict no 14');
@@ -20,11 +16,6 @@ function main() {
 
 		['msg', Number, Number], function(no1, no2) {
 			puts(' - Matched { id: msg no1: ' + no1 + ' no2: ' + no2 + ' }');
-		},
-		
-		// Case with custom handler (IS_MY_OBJ)
-		['my-obj', IS_MY_OBJ], function(msg) {
-			puts(' - Custom handler matched');
 		},
 		
 		// Default handler, if no other case is matching. 
@@ -45,10 +36,6 @@ function main() {
 	resolver(16);
 	puts('Running: resolver( [\'msg\', 14, 12] ) ', true);
 	resolver( ['msg', 14, 12] );
-	puts('Running: resolver( [\'msg\', {_myobj: true}] ', true);
-	resolver( ['my-obj', {_myobj: true}] );
-	puts('Running: resolver( [\'msg\', {_myobj: false}] ', true);
-	resolver( ['my-obj', {_myobj: false}] );
 	puts('Running: resolver( \'This value will not match any of the cases.\')', true);
 	resolver( 'This value will not match any of the cases.');
 	
