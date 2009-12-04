@@ -8,7 +8,7 @@ function MyClass(a, b) {
 
 // The simpler custom comparer is __equals__. Return ´true´ if the value 
 // matches, else ´false´. The matching object is always included in the 
-// result callback.
+// result callback. The method takes two arguments.
 MyClass.__equals__ = function(first, second) {
     return first.a == second.a && first.b == second.b;
 }
@@ -20,10 +20,10 @@ function OtherClass(a, b) {
 
 OtherClass.prototype = {
 
-    // The __is__ method is the comparer for object instances . Return ´true´ 
-    // if the value matches, else ´false´. The matching object is always 
-    // included in the result callback.
-    __is__: function(other) {
+    // The __equals__ method is the comparer for object instances . Return 
+    // ´true´ if the value matches, else ´false´. The matching object is always 
+    // included in the result callback. The method takes one argument.
+    __equals__: function(other) {
         return this.a == other.a && this.b == other.b;
     }
     

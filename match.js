@@ -11,7 +11,7 @@ var Match = (function() {
     var TYPE_RE = /function\s([A-Za-z_1-9$]+)/;;
     
     function is_prim_type(obj) {
-        return obj == String || obj == Number || obj == Date
+        return obj == String || obj == Number || obj == Date || obj == Boolean
     }
     
     function is_empty(value) {
@@ -20,29 +20,55 @@ var Match = (function() {
     
     function get_resolver(obj) {
         var ctor;
-        if(obj && obj['__is__']) {
-            // The __is__ comparer is "most valuable", always prioritized.
-            ctor = TYPE_RESOLVERS['-is'];
-        } else if(obj && obj.constructor && obj.constructor['__equals__']) {
-            ctor = TYPE_RESOLVERS['-equals'];
-        } else if(obj && obj['__compare__']) {
-            return obj['__compare__'];
-        } else if(is_prim_type(obj)) {
-            ctor = TYPE_RESOLVERS['-type'];
-        } else if(is_empty(obj)) {
-            ctor = TYPE_RESOLVERS['-equal'];
-        } else {
-            var type_name = TYPE_RE(obj.constructor.toString())[1];
-            ctor = TYPE_RESOLVERS[type_name];
-            if(!ctor) ctor = TYPE_RESOLVERS['Object'];
+        
+        // Check if we got an instance __compare__ method (most valuable)
+        if(obj && obj['__compare__']) return function(value) {
+            return obj.__compare__(value);
         }
+        
+        // Check if we got an instance __equals__ method (most second most 
+        // valuable)
+        else if(obj && obj['__equals__']) return function(value) {
+            if(obj.__equals__(value)) return [value];
+            throw NO_MATCH;
+        }
+
+        // Check if the instance constructor class has an __compare__ method. 
+        else if(obj && obj.constructor && obj.constructor['__compare__']) return function(value) {
+            return obj.constructor.__compare__(obj, value);
+        }
+
+        // Check if the instance constructor class has an __equals__ method. 
+        else if(obj && obj.constructor && obj.constructor['__equals__']) return function(value) {
+            var comp = obj.constructor.__equals__;
+            if(comp(obj, value)) return [value];
+            throw NO_MATCH;
+        }
+        
+        // Check for native type's (Strings, Number and Regexp's)
+        else if(is_prim_type(obj)) return function(value) {
+            if(is_empty(value) || value.constructor !== obj) throw NO_MATCH;
+            return [value];
+        }
+        
+        // Check for null and undefined types
+        else if(is_empty(obj)) return function(value) {
+            if(obj !== value) throw NO_MATCH;
+            return [value];
+        }
+        
+        // Didnt match any of the special case resolvers. Find it in 
+        // the TYPE_RESOLVERS list instead.
+        var type_name = TYPE_RE(obj.constructor.toString())[1];
+        ctor = TYPE_RESOLVERS[type_name];
+        if(!ctor) ctor = TYPE_RESOLVERS['Object'];
         return ctor(obj);
     }
     
     var TYPE_RESOLVERS = {
 
         // Function resolver. Note: Functions in match patterns are not allowed 
-        // to throw exceptiosn. If an Exception is throwned, the NO_MATCH value
+        // to throw exception's. If an Exception is throwned, the NO_MATCH value
         // is returned for the case in question.
         Function: function(callback) {
             return function(value) {
@@ -77,6 +103,14 @@ var Match = (function() {
                     }
                     return result;
                 }
+            }
+        },
+
+        // Boolean resolver
+        Boolean: function(b) {
+            return function(value) {
+                if(b !== value) throw NO_MATCH;
+                return [];
             }
         },
         
@@ -119,37 +153,7 @@ var Match = (function() {
                 }
                 return result;
             }
-        },
-        
-        '-type': function(type) {
-            return function(value) {
-                if(is_empty(value) || value.constructor !== type) throw NO_MATCH;
-                return [value];
-            }
-        },
-
-        '-equal': function(valueA) {
-            return function(valueB) {
-                if(valueA !== valueB) throw NO_MATCH;
-                return [valueB];
-            }
-        },
-        
-        '-equals': function(obj) {
-            return function(value) {
-                var comp = obj.constructor.__equals__;
-                if(comp(obj, value)) return [value];
-                throw NO_MATCH;
-            }
-        },
-        
-        '-is': function(instance) {
-            return function(value) {
-                if(instance.__is__(value)) return [value];
-                throw NO_MATCH;
-            }
         }
-        
     }
     
     var Result = function() {
