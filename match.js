@@ -84,7 +84,7 @@ var Match = (function() {
         RegExp: function(regexp) {
             return function(value) {
                 if(!value || !regexp.test(value)) throw NO_MATCH;
-                return [value];
+                return [];
             }
         },
         
@@ -92,7 +92,7 @@ var Match = (function() {
         Number: function(no) {
             return function(value) {
                 if(no !== value) throw NO_MATCH;
-                return [value];
+                return [];
             }
         },
 
@@ -100,7 +100,7 @@ var Match = (function() {
         String: function(str) {
             return function(value) {
                 if(str !== value) throw NO_MATCH;
-                return [value];
+                return [];
             }
         },
         

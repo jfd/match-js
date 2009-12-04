@@ -10,20 +10,20 @@ function main() {
 	}
 
 	var resolver = Match (
-		14, function(no) {
-			puts(' - Matched against strict no ' + no);
+		14, function() {
+			puts(' - Matched against strict no 14');
 		},
 
 		Number, function(no) {
 			puts(' - Matched against dynamic no ' + no);
 		},
 
-		['msg', Number, Number], function(id, no1, no2) {
-			puts(' - Matched { id: ' + id + ' no1: ' + no1 + ' no2: ' + no2 + ' }');
+		['msg', Number, Number], function(no1, no2) {
+			puts(' - Matched { id: msg no1: ' + no1 + ' no2: ' + no2 + ' }');
 		},
 		
 		// Case with custom handler (IS_MY_OBJ)
-		['my-obj', IS_MY_OBJ], function(id, msg) {
+		['my-obj', IS_MY_OBJ], function(msg) {
 			puts(' - Custom handler matched');
 		},
 		
