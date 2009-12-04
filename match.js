@@ -218,10 +218,26 @@ var Match = (function() {
         return Matcher;
     }
     
+    // A comparer that ignores a value in the pattern
+    var pass = {
+        __compare__: function(value) {
+            return [];
+        }
+    }
+    
+    // A comparer that includes a value without matching.
+    var incl = {
+        __compare__: function(value) {
+            return [value];
+        }
+    }
+    
     // Export public members
     Result.TYPE_RESOLVERS = TYPE_RESOLVERS;
     Result.NO_MATCH = NO_MATCH;
     Result.get_resolver = get_resolver;
+    Result.pass = pass;
+    Result.incl = incl;
     
     return Result;
 })();
