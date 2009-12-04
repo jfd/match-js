@@ -67,16 +67,10 @@ var Match = (function() {
     
     var TYPE_RESOLVERS = {
 
-        // Function resolver. Note: Functions in match patterns are not allowed 
-        // to throw exception's. If an Exception is throwned, the NO_MATCH value
-        // is returned for the case in question.
-        Function: function(callback) {
+        // Function (class constructor) resolver. 
+        Function: function(ctor) {
             return function(value) {
-                try { 
-                    callback(value);
-                } catch(ex) { 
-                    throw NO_MATCH; 
-                }
+                if(!value || value.constructor !== ctor) throw NO_MATCH;
                 return [value];
             }
         },
