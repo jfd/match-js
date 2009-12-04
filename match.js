@@ -6,7 +6,7 @@
 //  
 //  Copyright (c) 2009 Johan Dahlberg 
 //
-
+var sys = require('sys');
 
 var Match = (function() {
     var NO_MATCH = { __matchtype__: 'no-match', toString: function() { return 'no-match' }};
@@ -22,7 +22,14 @@ var Match = (function() {
     
     function get_resolver(obj) {
         var ctor;
-        if(is_prim_type(obj)) {
+        if(obj && obj['__is__']) {
+            // The __is__ comparer is "most valuable", always prioritized.
+            ctor = TYPE_RESOLVERS['-is'];
+        } else if(obj && obj.constructor && obj.constructor['__equals__']) {
+            ctor = TYPE_RESOLVERS['-equals'];
+        } else if(obj && obj['__compare__']) {
+            return obj['__compare__'];
+        } else if(is_prim_type(obj)) {
             ctor = TYPE_RESOLVERS['-type'];
         } else if(is_empty(obj)) {
             ctor = TYPE_RESOLVERS['-equal'];
@@ -128,7 +135,22 @@ var Match = (function() {
                 if(valueA !== valueB) throw NO_MATCH;
                 return [valueB];
             }
-        }
+        },
+        
+        '-equals': function(obj) {
+            return function(value) {
+                var comp = obj.constructor.__equals__;
+                if(comp(obj, value)) return [value];
+                throw NO_MATCH;
+            }
+        },
+        
+        '-is': function(instance) {
+            return function(value) {
+                if(instance.__is__(value)) return [value];
+                throw NO_MATCH;
+            }
+        },
         
     }
     
