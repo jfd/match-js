@@ -178,10 +178,14 @@ var Match = (function() {
             }
         }
         
-        // The resolver takes one object as argument. The resolver throws an 
-        // Exception if no pattern was matched.
-        var Matcher = function(orig) {
-            var l = cases.length, errors = [], obj = orig;
+        // Matches against defined patterns. The first argument is the object 
+        // to match agaisnt. The second argument is optional and respresent the
+        // value that is return if no pattern was matched.
+        var Matcher = function(orig, nomatch_res) {
+            var l = cases.length, 
+                errors = [], 
+                obj = orig, 
+                nomatch = nomatch_res || undefined; // undefined is default
             while(l-- > 0) {
                 var c = cases[l]
                 if(c.resolver) {
@@ -199,8 +203,12 @@ var Match = (function() {
                     obj = c.filter(obj);
                 }
             }
+            
+            // Check if a default case is defined. 
             if(default_case) default_case.apply(this, [obj, orig]);
-            else return NO_MATCH;
+            
+            // No pattern was matched. Return the default nomatch value.
+            else return nomatch;
         };
         
         // Identify the new matcher as a Matcher
