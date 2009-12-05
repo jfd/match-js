@@ -1,5 +1,9 @@
+// custom-comparer.js
+// Some examples how-to build custom comparer's  
+//
+// Note: Requires node.js (http://nodejs.org/) to run.
 process.mixin(require('utils'));
-process.mixin(require('../../match'));
+process.mixin(require('../match'));
 
 function MyClass(a, b) {
     this.a = a;
