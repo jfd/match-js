@@ -70,8 +70,12 @@ var Match = (function() {
         // Function (class constructor) resolver. 
         Function: function(ctor) {
             return function(value) {
-                if(!value || value.constructor !== ctor) throw NO_MATCH;
-                return [value];
+                var c = value !== undefined ? value.constructor : undefined;
+                if(c) {
+                    if(c === ctor) return [value];
+                    while((c = c.super_)) if(c === ctor) return [value];
+                }
+                throw NO_MATCH;
             }
         },
         
