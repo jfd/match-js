@@ -6,7 +6,6 @@
 //  
 //  Copyright (c) 2010 Johan Dahlberg 
 //
-var sys = require('sys');
 var Match = (function() {
     var NO_MATCH = { __matchtype__: 'no-match', toString: function() { return 'no-match' }};
     var TYPE_RE = /function\s([A-Za-z_1-9$]+)/;
