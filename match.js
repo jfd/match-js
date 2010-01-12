@@ -4,11 +4,13 @@
 //  
 //  Read readme.md for instructions and LICENSE license.
 //  
-//  Copyright (c) 2009 Johan Dahlberg 
+//  Copyright (c) 2010 Johan Dahlberg 
 //
+var sys = require('sys');
 var Match = (function() {
     var NO_MATCH = { __matchtype__: 'no-match', toString: function() { return 'no-match' }};
-    var TYPE_RE = /function\s([A-Za-z_1-9$]+)/;;
+    var TYPE_RE = /function\s([A-Za-z_1-9$]+)/;
+    var IS_FIELD_OP = /\s\=$|\s\!$|\s\>$|\s\<$|\s\>\=$|\s\<\=$/;
     
     function is_prim_type(obj) {
         return obj == String || obj == Number || obj == Date || obj == Boolean
@@ -16,6 +18,50 @@ var Match = (function() {
     
     function is_empty(value) {
         return value == null || value == undefined;
+    }
+    
+    function get_op_resolver(operator, value_a) {
+        var op_resolver = function() { return true };
+        switch(operator) {
+            case ' =':
+                op_resolver = function(value_b, parent, state) {
+                    if(value_a == value_b) return true;
+                    return false;
+                }
+                break;
+            case ' >':
+                op_resolver = function(value_b, parent, state) {
+                    if(value_a > value_b) return true;
+                    return false;
+                }
+                break;
+            case ' <':
+                op_resolver = function(value_b, parent, state) {
+                    if(value_a < value_b) return true;
+                    return false;
+                }
+                break;
+            case ' >=':
+                op_resolver = function(value_b, parent, state) {
+                    if(value_a >= value_b) return true;
+                    return false;
+                }
+                break;
+            case ' <=':
+                op_resolver = function(value_b, parent, state) {
+                    if(value_a <= value_b) return true;
+                    return false;
+                }
+                break;
+            case ' !':
+                op_resolver = function(value_b, parent, state) {
+                    if(value_a != value_b) return true;
+                    return false;
+                }
+                break;
+        }
+        op_resolver.is_op = true;
+        return op_resolver;
     }
     
     function get_resolver(obj) {
@@ -137,19 +183,47 @@ var Match = (function() {
         },
         
         Object: function(obj) {
-            var resolvers = {};
+            var resolvers = {},
+                has_ops = false;
             for(var key in obj) {
-                resolvers[key] = get_resolver(obj[key]);
-            }
-            return function(value) {
-                if(value === null || value === undefined) throw NO_MATCH;
-                var result = [];
-                for(var key in resolvers) {
-                    result = result.concat(
-                        resolvers[key](value[key])
-                    );
+                var resolver, akey = key, operator;
+                if((operator = IS_FIELD_OP(key))) {
+                    has_ops = true;
+                    akey = key.substr(0, key.length - operator.length - 1);
+                    resolver = get_op_resolver(operator, obj[key]);
+                } else {
+                    resolver = get_resolver(obj[key]);
                 }
-                return result;
+                resolvers[akey] = resolver;
+            }
+            if(has_ops) {
+                return function(obj) {
+                    if(obj === null || obj === undefined) throw NO_MATCH;
+                    var result_a = [], result_b = [], match = null;
+                    for(var key in resolvers) {
+                        var resolver = resolvers[key];
+                        if(resolver.is_op) {
+                            match = resolver(obj[key])
+                            result = result_b;
+                        } else if(match === null) {
+                            result_a = result_a.concat(resolver(obj[key]));
+                        } else {
+                            result_b = result_b.concat(resolver(obj[key]));
+                        }
+                    }
+                    return match ? result_a.concat([obj]).concat(result_b) : 
+                                   result_a.concat(result_b);
+                }
+            } else {
+                return function(obj) {
+                    if(obj === null || obj === undefined) throw NO_MATCH;
+                    var result = [];
+                    for(var key in resolvers) {
+                        var resolver = resolvers[key];
+                        result = result.concat(resolver(obj[key]));
+                    }
+                    return result;
+                }
             }
         }
     }
