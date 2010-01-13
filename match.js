@@ -9,7 +9,7 @@
 var Match = (function() {
     var NO_MATCH = { __matchtype__: 'no-match', toString: function() { return 'no-match' }};
     var TYPE_RE = /function\s([A-Za-z_1-9$]+)/;
-    var IS_FIELD_OP = /\s\=$|\s\!$|\s\>$|\s\<$|\s\>\=$|\s\<\=$/;
+    var IS_FIELD_OP = /\s(\=|\!|\>|\<|\>\=|\<\=)$/;
     
     function is_prim_type(obj) {
         return obj == String || obj == Number || obj == Date || obj == Boolean
@@ -19,43 +19,67 @@ var Match = (function() {
         return value == null || value == undefined;
     }
     
-    function get_op_resolver(operator, value_a) {
-        var op_resolver = function() { return true };
-        switch(operator) {
-            case ' =':
+    function get_op_resolver(op, value_a) {
+        var op_resolver = function() { throw NO_MATCH };
+        switch(op) {
+            case '=':
                 op_resolver = function(value_b, parent, state) {
-                    if(value_a == value_b) return true;
-                    return false;
+                    if(value_a == value_b) {
+                        var result = state.matched ? [] : [parent];
+                        state.matched = true;
+                        return result;
+                    } 
+                    throw NO_MATCH;
                 }
                 break;
-            case ' >':
+            case '>':
                 op_resolver = function(value_b, parent, state) {
-                    if(value_a > value_b) return true;
-                    return false;
+                  if(value_a > value_b) {
+                      var result = state.matched ? [] : [parent];
+                      state.matched = true;
+                      return result;
+                  } 
+                  throw NO_MATCH;
                 }
                 break;
-            case ' <':
+            case '<':
                 op_resolver = function(value_b, parent, state) {
-                    if(value_a < value_b) return true;
-                    return false;
+                    if(value_a < value_b) {
+                        var result = state.matched ? [] : [parent];
+                        state.matched = true;
+                        return result;
+                    } 
+                    throw NO_MATCH;
                 }
                 break;
-            case ' >=':
+            case '>=':
                 op_resolver = function(value_b, parent, state) {
-                    if(value_a >= value_b) return true;
-                    return false;
+                    if(value_a >= value_b) {
+                        var result = state.matched ? [] : [parent];
+                        state.matched = true;
+                        return result;
+                    } 
+                    throw NO_MATCH;
                 }
                 break;
-            case ' <=':
+            case '<=':
                 op_resolver = function(value_b, parent, state) {
-                    if(value_a <= value_b) return true;
-                    return false;
+                  if(value_a <= value_b) {
+                      var result = state.matched ? [] : [parent];
+                      state.matched = true;
+                      return result;
+                  } 
+                  throw NO_MATCH;
                 }
                 break;
-            case ' !':
+            case '!':
                 op_resolver = function(value_b, parent, state) {
-                    if(value_a != value_b) return true;
-                    return false;
+                  if(value_a != value_b) {
+                      var result = state.matched ? [] : [parent];
+                      state.matched = true;
+                      return result;
+                  } 
+                  throw NO_MATCH;
                 }
                 break;
         }
@@ -182,47 +206,25 @@ var Match = (function() {
         },
         
         Object: function(obj) {
-            var resolvers = {},
-                has_ops = false;
+            var resolvers = {};
             for(var key in obj) {
-                var resolver, akey = key, operator;
-                if((operator = IS_FIELD_OP(key))) {
-                    has_ops = true;
-                    akey = key.substr(0, key.length - operator.length - 1);
-                    resolver = get_op_resolver(operator, obj[key]);
+                var resolver, akey = key, op;
+                if((op = IS_FIELD_OP(key)[1])) {
+                    akey = key.substr(0, key.length - op.length - 1);
+                    resolver = get_op_resolver(op, obj[key]);
                 } else {
                     resolver = get_resolver(obj[key]);
                 }
                 resolvers[akey] = resolver;
             }
-            if(has_ops) {
-                return function(obj) {
-                    if(obj === null || obj === undefined) throw NO_MATCH;
-                    var result_a = [], result_b = [], match = null;
-                    for(var key in resolvers) {
-                        var resolver = resolvers[key];
-                        if(resolver.is_op) {
-                            match = resolver(obj[key])
-                            result = result_b;
-                        } else if(match === null) {
-                            result_a = result_a.concat(resolver(obj[key]));
-                        } else {
-                            result_b = result_b.concat(resolver(obj[key]));
-                        }
-                    }
-                    return match ? result_a.concat([obj]).concat(result_b) : 
-                                   result_a.concat(result_b);
+            return function(value) {
+                if(value === null || value === undefined) throw NO_MATCH;
+                var result = [], state = {};
+                for(var key in resolvers) {
+                    var resolver = resolvers[key];
+                    result = result.concat(resolver(value[key], value, state));
                 }
-            } else {
-                return function(obj) {
-                    if(obj === null || obj === undefined) throw NO_MATCH;
-                    var result = [];
-                    for(var key in resolvers) {
-                        var resolver = resolvers[key];
-                        result = result.concat(resolver(obj[key]));
-                    }
-                    return result;
-                }
+                return result;
             }
         }
     }
