@@ -208,8 +208,8 @@ var Match = (function() {
         Object: function(obj) {
             var resolvers = {};
             for(var key in obj) {
-                var resolver, akey = key, op;
-                if((op = IS_FIELD_OP(key)[1])) {
+                var resolver, akey = key, op, m;
+                if((m = IS_FIELD_OP(key)) && (op = m[1])) {
                     akey = key.substr(0, key.length - op.length - 1);
                     resolver = get_op_resolver(op, obj[key]);
                 } else {
