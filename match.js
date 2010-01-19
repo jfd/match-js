@@ -115,7 +115,7 @@ var Match = (function() {
         // Function (class constructor) resolver. 
         Function: function(ctor) {
             return function(value) {
-                var c = value !== undefined ? value.constructor : undefined;
+                var c = value !== undefined && value !== null ? value.constructor : undefined;
                 if(c) {
                     if(c === ctor) return [value];
                     while((c = c.super_)) if(c === ctor) return [value];
