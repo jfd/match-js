@@ -11,7 +11,7 @@ function main() {
 		},
 
 		['msg', Number, Number], function(no1, no2) {
-			println(' - Matched { id: ' + id + ' no1: ' + no1 + ' no2: ' + no2 + ' }');
+			println(' - Matched { no1: ' + no1 + ' no2: ' + no2 + ' }');
 		},
 		
 		// Default handler, if no other case is matching. 

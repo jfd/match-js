@@ -23,7 +23,7 @@ var resolver = Match (
 
 	// Matches when field's firstName and lastName has a string 
 	// value and when a home phone number is present.
-	{ lastName: String, phone: { home: String }}, function(last, phone) {
+	{ lastName: String, phone: { 'home': String }}, function(last, phone) {
 		puts(' - Matched: ' + last + ' (phone: ' + phone + ' )');
 	}
 	
